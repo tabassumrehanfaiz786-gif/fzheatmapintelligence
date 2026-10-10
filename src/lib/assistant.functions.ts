@@ -44,9 +44,3 @@ export const askAssistant = createServerFn({ method: "POST" })
     }
     return { reply };
   });
-    if (r.status === 429) return { error: "Too many requests right now — please wait a moment." };
-    if (r.status === 402) return { error: "AI credits are exhausted for this workspace." };
-    if (!r.ok) return { error: `AI request failed (${r.status}).` };
-    const j = (await r.json()) as { choices?: { message?: { content?: string } }[] };
-    return { reply: j.choices?.[0]?.message?.content ?? "" };
-  });
