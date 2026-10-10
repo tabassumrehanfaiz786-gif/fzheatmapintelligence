@@ -78,7 +78,7 @@ function useFunding() {
 }
 
 const fmt = (n: number, d = 2) => n.toLocaleString(undefined, { minimumFractionDigits: d, maximumFractionDigits: d });
-const COLORS: Record<string, string> = { Binance: "var(--warn)", Bybit: "var(--primary)", OKX: "var(--bid)" };
+const COLORS: Record<string, string> = { Binance: "var(--ask)", Bybit: "var(--primary)", OKX: "var(--bid)" };
 
 function SpotPerp() {
   const { state, history } = useVenues();
