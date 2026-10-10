@@ -64,7 +64,7 @@ export function PageHeader({ title, sub, badge }: { title: string; sub: string; 
   );
 }
 
-export function Stat({ label, value, hint, tone }: { label: string; value: ReactNode; hint?: string; tone?: "bid" | "ask" }) {
+export function Stat({ label, value, hint, tone }: { label: string; value: ReactNode; hint?: string | undefined; tone?: "bid" | "ask" | undefined }) {
   return (
     <div className="panel p-3">
       <div className="label-caps">{label}</div>
@@ -80,7 +80,7 @@ export function StatusBadge({ s }: { s: FeatureStatus }) {
   return <span className={`rounded-sm border px-2 py-0.5 font-mono text-[0.68rem] uppercase ${c}`}>{s}</span>;
 }
 
-export function PlannedModule({ title, sub, stage, items, note }: { title: string; sub: string; stage: number; items: string[]; note?: string }) {
+export function PlannedModule({ title, sub, stage, items, note }: { title: string; sub: string; stage: number; items: string[]; note?: string | undefined }) {
   return (
     <>
       <PageHeader title={title} sub={sub} badge={<StatusBadge s="Planned" />} />
