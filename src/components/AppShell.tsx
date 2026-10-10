@@ -5,6 +5,7 @@ import { useFeed } from "@/lib/market/binance-feed";
 export const NAV = [
   { to: "/", label: "Overview Dashboard" },
   { to: "/heatmap", label: "Live Heatmap" },
+  { to: "/archive", label: "Session Archive" },
   { to: "/spot-perp", label: "Spot vs Perpetual" },
   { to: "/migration", label: "Liquidity Migration" },
   { to: "/integrity", label: "Market Integrity" },
