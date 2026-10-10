@@ -14,7 +14,77 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      recording_columns: {
+        Row: {
+          best_ask: number
+          best_bid: number
+          id: number
+          levels: Json
+          mid: number
+          session_id: string
+          t: string
+        }
+        Insert: {
+          best_ask: number
+          best_bid: number
+          id?: never
+          levels: Json
+          mid: number
+          session_id: string
+          t: string
+        }
+        Update: {
+          best_ask?: number
+          best_bid?: number
+          id?: never
+          levels?: Json
+          mid?: number
+          session_id?: string
+          t?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recording_columns_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "recording_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      recording_sessions: {
+        Row: {
+          bucket: number
+          column_count: number
+          ended_at: string | null
+          id: string
+          note: string | null
+          source: string
+          started_at: string
+          symbol: string
+        }
+        Insert: {
+          bucket: number
+          column_count?: number
+          ended_at?: string | null
+          id?: string
+          note?: string | null
+          source: string
+          started_at?: string
+          symbol: string
+        }
+        Update: {
+          bucket?: number
+          column_count?: number
+          ended_at?: string | null
+          id?: string
+          note?: string | null
+          source?: string
+          started_at?: string
+          symbol?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
