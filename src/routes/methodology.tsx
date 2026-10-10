@@ -21,14 +21,14 @@ const REGISTER: [string, number, FeatureStatus][] = [
   ["Live price-vs-time heatmap, zoom, window, depth inspector", 2, "Implemented"],
   ["Session CSV export (browser buffer)", 2, "Implemented"],
   ["Heatmap pan", 2, "Planned"],
-  ["Permanent historical recording", 3, "Planned"],
-  ["Historical replay & annotations", 3, "Planned"],
-  ["Spot vs perpetual comparison", 4, "Planned"],
-  ["Liquidity migration research engine", 4, "Planned"],
-  ["Market integrity monitor", 5, "Planned"],
-  ["Research Studio", 5, "Planned"],
-  ["Regulatory research workspace", 6, "Planned"],
-  ["AI research assistant", 6, "Planned"],
+  ["Permanent historical recording", 3, "Implemented"],
+  ["Historical replay & annotations", 3, "Implemented"],
+  ["Spot vs perpetual comparison", 4, "Implemented"],
+  ["Liquidity migration research engine", 4, "Implemented"],
+  ["Market integrity monitor", 5, "Implemented"],
+  ["Research Studio", 5, "Implemented"],
+  ["Regulatory research workspace", 6, "Implemented"],
+  ["AI research assistant", 6, "Implemented"],
 ];
 
 function Methodology() {

@@ -17,11 +17,33 @@ export const askAssistant = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const key = process.env.LOVABLE_API_KEY;
     if (!key) return { error: "AI is not configured." };
-    const r = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const r = await fetch("https://ai.gateway.lovable.dev/v1/responses", {
       method: "POST",
-      headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ model: "google/gemini-3-flash-preview", messages: [{ role: "system", content: SYSTEM }, { role: "system", content: `CONTEXT DATA:\n${data.context || "(none selected)"}` }, ...data.messages] }),
+      headers: { "Lovable-API-Key": key, "X-Lovable-AIG-SDK": "fetch", "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "openai/gpt-6-astra", stream: true, store: false, reasoning: { effort: "low" },
+        instructions: `${SYSTEM}\n\nCONTEXT DATA:\n${data.context || "(none selected)"}`,
+        input: data.messages.map((m) => ({ role: m.role, content: m.content })),
+      }),
     });
+    if (r.status === 429) return { error: "Too many requests right now — please wait a moment." };
+    if (r.status === 402) return { error: "AI credits are exhausted for this workspace." };
+    if (!r.ok || !r.body) return { error: `AI request failed (${r.status}).` };
+    // Consume the SSE stream and assemble the final text.
+    const reader = r.body.getReader(), dec = new TextDecoder();
+    let buf = "", reply = "";
+    for (;;) {
+      const { done, value } = await reader.read(); if (done) break;
+      buf += dec.decode(value, { stream: true });
+      const lines = buf.split("\n"); buf = lines.pop() ?? "";
+      for (const l of lines) {
+        if (!l.startsWith("data:")) continue;
+        const d = l.slice(5).trim(); if (!d || d === "[DONE]") continue;
+        try { const e = JSON.parse(d) as { type?: string; delta?: string }; if (e.type === "response.output_text.delta" && e.delta) reply += e.delta; } catch { /* ignore partial */ }
+      }
+    }
+    return { reply };
+  });
     if (r.status === 429) return { error: "Too many requests right now — please wait a moment." };
     if (r.status === 402) return { error: "AI credits are exhausted for this workspace." };
     if (!r.ok) return { error: `AI request failed (${r.status}).` };
