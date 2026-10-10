@@ -10,33 +10,141 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AssistantRouteImport } from './routes/assistant'
+import { Route as HeatmapRouteImport } from './routes/heatmap'
+import { Route as IntegrityRouteImport } from './routes/integrity'
+import { Route as MethodologyRouteImport } from './routes/methodology'
+import { Route as MigrationRouteImport } from './routes/migration'
+import { Route as RegulatoryRouteImport } from './routes/regulatory'
+import { Route as SpotPerpRouteImport } from './routes/spot-perp'
+import { Route as StudioRouteImport } from './routes/studio'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AssistantRoute = AssistantRouteImport.update({
+  id: '/assistant',
+  path: '/assistant',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HeatmapRoute = HeatmapRouteImport.update({
+  id: '/heatmap',
+  path: '/heatmap',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IntegrityRoute = IntegrityRouteImport.update({
+  id: '/integrity',
+  path: '/integrity',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MethodologyRoute = MethodologyRouteImport.update({
+  id: '/methodology',
+  path: '/methodology',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MigrationRoute = MigrationRouteImport.update({
+  id: '/migration',
+  path: '/migration',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RegulatoryRoute = RegulatoryRouteImport.update({
+  id: '/regulatory',
+  path: '/regulatory',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SpotPerpRoute = SpotPerpRouteImport.update({
+  id: '/spot-perp',
+  path: '/spot-perp',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StudioRoute = StudioRouteImport.update({
+  id: '/studio',
+  path: '/studio',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/assistant': typeof AssistantRoute
+  '/heatmap': typeof HeatmapRoute
+  '/integrity': typeof IntegrityRoute
+  '/methodology': typeof MethodologyRoute
+  '/migration': typeof MigrationRoute
+  '/regulatory': typeof RegulatoryRoute
+  '/spot-perp': typeof SpotPerpRoute
+  '/studio': typeof StudioRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/assistant': typeof AssistantRoute
+  '/heatmap': typeof HeatmapRoute
+  '/integrity': typeof IntegrityRoute
+  '/methodology': typeof MethodologyRoute
+  '/migration': typeof MigrationRoute
+  '/regulatory': typeof RegulatoryRoute
+  '/spot-perp': typeof SpotPerpRoute
+  '/studio': typeof StudioRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/assistant': typeof AssistantRoute
+  '/heatmap': typeof HeatmapRoute
+  '/integrity': typeof IntegrityRoute
+  '/methodology': typeof MethodologyRoute
+  '/migration': typeof MigrationRoute
+  '/regulatory': typeof RegulatoryRoute
+  '/spot-perp': typeof SpotPerpRoute
+  '/studio': typeof StudioRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/assistant'
+    | '/heatmap'
+    | '/integrity'
+    | '/methodology'
+    | '/migration'
+    | '/regulatory'
+    | '/spot-perp'
+    | '/studio'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/assistant'
+    | '/heatmap'
+    | '/integrity'
+    | '/methodology'
+    | '/migration'
+    | '/regulatory'
+    | '/spot-perp'
+    | '/studio'
+  id:
+    | '__root__'
+    | '/'
+    | '/assistant'
+    | '/heatmap'
+    | '/integrity'
+    | '/methodology'
+    | '/migration'
+    | '/regulatory'
+    | '/spot-perp'
+    | '/studio'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AssistantRoute: typeof AssistantRoute
+  HeatmapRoute: typeof HeatmapRoute
+  IntegrityRoute: typeof IntegrityRoute
+  MethodologyRoute: typeof MethodologyRoute
+  MigrationRoute: typeof MigrationRoute
+  RegulatoryRoute: typeof RegulatoryRoute
+  SpotPerpRoute: typeof SpotPerpRoute
+  StudioRoute: typeof StudioRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +156,75 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/assistant': {
+      id: '/assistant'
+      path: '/assistant'
+      fullPath: '/assistant'
+      preLoaderRoute: typeof AssistantRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/heatmap': {
+      id: '/heatmap'
+      path: '/heatmap'
+      fullPath: '/heatmap'
+      preLoaderRoute: typeof HeatmapRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/integrity': {
+      id: '/integrity'
+      path: '/integrity'
+      fullPath: '/integrity'
+      preLoaderRoute: typeof IntegrityRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/methodology': {
+      id: '/methodology'
+      path: '/methodology'
+      fullPath: '/methodology'
+      preLoaderRoute: typeof MethodologyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/migration': {
+      id: '/migration'
+      path: '/migration'
+      fullPath: '/migration'
+      preLoaderRoute: typeof MigrationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/regulatory': {
+      id: '/regulatory'
+      path: '/regulatory'
+      fullPath: '/regulatory'
+      preLoaderRoute: typeof RegulatoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/spot-perp': {
+      id: '/spot-perp'
+      path: '/spot-perp'
+      fullPath: '/spot-perp'
+      preLoaderRoute: typeof SpotPerpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/studio': {
+      id: '/studio'
+      path: '/studio'
+      fullPath: '/studio'
+      preLoaderRoute: typeof StudioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AssistantRoute: AssistantRoute,
+  HeatmapRoute: HeatmapRoute,
+  IntegrityRoute: IntegrityRoute,
+  MethodologyRoute: MethodologyRoute,
+  MigrationRoute: MigrationRoute,
+  RegulatoryRoute: RegulatoryRoute,
+  SpotPerpRoute: SpotPerpRoute,
+  StudioRoute: StudioRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
