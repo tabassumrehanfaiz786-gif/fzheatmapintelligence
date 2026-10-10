@@ -18,7 +18,7 @@ function valid(q: Quote): Quote | null {
 }
 
 export function parseBinanceBookTicker(m: unknown): Quote | null {
-  const o = m as Record<string, unknown>;
+  const o = m as { b?: unknown; B?: unknown; a?: unknown; A?: unknown };
   if (!o || o.b === undefined || o.a === undefined) return null;
   return valid({ bid: num(o.b), bidQty: num(o.B), ask: num(o.a), askQty: num(o.A) });
 }
