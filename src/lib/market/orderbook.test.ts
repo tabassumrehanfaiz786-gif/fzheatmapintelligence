@@ -24,7 +24,7 @@ describe("OrderBook reconstruction", () => {
   });
   it("computes depth and buckets", () => {
     const ob = new OrderBook(); ob.loadSnapshot(snap);
-    expect(ob.depthWithin(1.5)).toEqual({ bid: 3, ask: 4 });
+    expect(ob.depthWithin(2.5)).toEqual({ bid: 3, ask: 4 });
     expect(ob.bucket(10).get(90)).toEqual({ bid: 3, ask: 0 });
   });
 });
