@@ -85,6 +85,59 @@ export type Database = {
         }
         Relationships: []
       }
+      research_projects: {
+        Row: {
+          created_at: string
+          hypothesis: string
+          id: string
+          notes: string
+          params: Json
+          question: string
+          report: Json
+          results: Json | null
+          session_id: string | null
+          software_version: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          hypothesis?: string
+          id?: string
+          notes?: string
+          params?: Json
+          question?: string
+          report?: Json
+          results?: Json | null
+          session_id?: string | null
+          software_version?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          hypothesis?: string
+          id?: string
+          notes?: string
+          params?: Json
+          question?: string
+          report?: Json
+          results?: Json | null
+          session_id?: string | null
+          software_version?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "research_projects_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "recording_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

@@ -8,6 +8,13 @@
       "when": 1791615944551,
       "tag": "0000_create_recording_tables",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1791617224215,
+      "tag": "0001_research_projects",
+      "breakpoints": true
     }
   ]
 }
