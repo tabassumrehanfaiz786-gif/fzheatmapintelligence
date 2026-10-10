@@ -8,3 +8,9 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+# Architecture rules
+- Order-book reconstruction lives in pure `src/lib/market/orderbook.ts` with unit tests — keeps sequence logic verifiable apart from the network.
+- One shared live feed (`MarketFeedProvider` in root) serves all pages — avoids duplicate exchange connections.
+- Unimplemented modules render `PlannedModule` with no data — never show placeholder numbers as real.
+- Market data is read-only public exchange data; no trading endpoints or keys in the browser.
