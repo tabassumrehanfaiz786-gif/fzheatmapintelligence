@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      etf_news_analyses: {
+        Row: {
+          created_at: string
+          explanation: string
+          flows: Json
+          id: string
+          news: Json
+          note: string
+          period_end: string
+          period_start: string
+          sources: Json
+          stats: Json
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          explanation?: string
+          flows?: Json
+          id?: string
+          news?: Json
+          note?: string
+          period_end: string
+          period_start: string
+          sources?: Json
+          stats?: Json
+          user_id?: string
+        }
+        Update: {
+          created_at?: string
+          explanation?: string
+          flows?: Json
+          id?: string
+          news?: Json
+          note?: string
+          period_end?: string
+          period_start?: string
+          sources?: Json
+          stats?: Json
+          user_id?: string
+        }
+        Relationships: []
+      }
       recording_columns: {
         Row: {
           best_ask: number
@@ -62,6 +104,7 @@ export type Database = {
           source: string
           started_at: string
           symbol: string
+          user_id: string | null
         }
         Insert: {
           bucket: number
@@ -72,6 +115,7 @@ export type Database = {
           source: string
           started_at?: string
           symbol: string
+          user_id?: string | null
         }
         Update: {
           bucket?: number
@@ -82,6 +126,7 @@ export type Database = {
           source?: string
           started_at?: string
           symbol?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -99,6 +144,7 @@ export type Database = {
           software_version: string | null
           title: string
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           created_at?: string
@@ -113,6 +159,7 @@ export type Database = {
           software_version?: string | null
           title: string
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           created_at?: string
@@ -127,6 +174,7 @@ export type Database = {
           software_version?: string | null
           title?: string
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: [
           {

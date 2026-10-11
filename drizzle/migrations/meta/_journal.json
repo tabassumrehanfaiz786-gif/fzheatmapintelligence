@@ -15,6 +15,13 @@
       "when": 1791617224215,
       "tag": "0001_research_projects",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791696971190,
+      "tag": "0002_owner_scoped_rls_and_etf_analyses",
+      "breakpoints": true
     }
   ]
 }
