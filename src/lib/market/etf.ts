@@ -41,7 +41,7 @@ export interface EtfStats {
 }
 
 export function etfStats(rows: DayRow[]): EtfStats {
-  const next = rows.map((r, i) => ({ ...r, nextRet: rows[i + 1]?.ret ?? null }));
+  const next: DayRow[] = rows.map((r, i) => ({ ...r, ret: rows[i + 1]?.ret ?? null }));
   let same = 0, n = 0; const divergentDays: EtfStats["divergentDays"] = [];
   for (const r of rows) {
     if (r.flow === null || r.sentiment === null || r.flow === 0 || r.sentiment === 0) continue;
@@ -52,7 +52,7 @@ export function etfStats(rows: DayRow[]): EtfStats {
   return {
     version: ETF_ANALYSIS_VERSION, days: rows.length, flowDays, missingFlowDays: rows.length - flowDays,
     flowVsReturn: pairs(rows, (r) => r.flow, (r) => r.ret),
-    flowVsNextReturn: pairs(next, (r) => r.flow, (r) => r.nextRet),
+    flowVsNextReturn: pairs(next, (r) => r.flow, (r) => r.ret),
     flowVsSentiment: pairs(rows, (r) => r.flow, (r) => r.sentiment),
     sentimentVsReturn: pairs(rows, (r) => r.sentiment, (r) => r.ret),
     agreement: { same, n }, divergentDays,
