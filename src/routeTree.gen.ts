@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ArchiveRouteImport } from './routes/archive'
 import { Route as AssistantRouteImport } from './routes/assistant'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as HeatmapRouteImport } from './routes/heatmap'
 import { Route as IntegrityRouteImport } from './routes/integrity'
 import { Route as MethodologyRouteImport } from './routes/methodology'
@@ -33,6 +34,11 @@ const ArchiveRoute = ArchiveRouteImport.update({
 const AssistantRoute = AssistantRouteImport.update({
   id: '/assistant',
   path: '/assistant',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HeatmapRoute = HeatmapRouteImport.update({
@@ -75,6 +81,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/archive': typeof ArchiveRoute
   '/assistant': typeof AssistantRoute
+  '/auth': typeof AuthRoute
   '/heatmap': typeof HeatmapRoute
   '/integrity': typeof IntegrityRoute
   '/methodology': typeof MethodologyRoute
@@ -87,6 +94,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/archive': typeof ArchiveRoute
   '/assistant': typeof AssistantRoute
+  '/auth': typeof AuthRoute
   '/heatmap': typeof HeatmapRoute
   '/integrity': typeof IntegrityRoute
   '/methodology': typeof MethodologyRoute
@@ -100,6 +108,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/archive': typeof ArchiveRoute
   '/assistant': typeof AssistantRoute
+  '/auth': typeof AuthRoute
   '/heatmap': typeof HeatmapRoute
   '/integrity': typeof IntegrityRoute
   '/methodology': typeof MethodologyRoute
@@ -114,6 +123,7 @@ export interface FileRouteTypes {
     | '/'
     | '/archive'
     | '/assistant'
+    | '/auth'
     | '/heatmap'
     | '/integrity'
     | '/methodology'
@@ -126,6 +136,7 @@ export interface FileRouteTypes {
     | '/'
     | '/archive'
     | '/assistant'
+    | '/auth'
     | '/heatmap'
     | '/integrity'
     | '/methodology'
@@ -138,6 +149,7 @@ export interface FileRouteTypes {
     | '/'
     | '/archive'
     | '/assistant'
+    | '/auth'
     | '/heatmap'
     | '/integrity'
     | '/methodology'
@@ -151,6 +163,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ArchiveRoute: typeof ArchiveRoute
   AssistantRoute: typeof AssistantRoute
+  AuthRoute: typeof AuthRoute
   HeatmapRoute: typeof HeatmapRoute
   IntegrityRoute: typeof IntegrityRoute
   MethodologyRoute: typeof MethodologyRoute
@@ -181,6 +194,13 @@ declare module '@tanstack/react-router' {
       path: '/assistant'
       fullPath: '/assistant'
       preLoaderRoute: typeof AssistantRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/heatmap': {
@@ -239,6 +259,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ArchiveRoute: ArchiveRoute,
   AssistantRoute: AssistantRoute,
+  AuthRoute: AuthRoute,
   HeatmapRoute: HeatmapRoute,
   IntegrityRoute: IntegrityRoute,
   MethodologyRoute: MethodologyRoute,
