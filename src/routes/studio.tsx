@@ -1,6 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { PageHeader, StatusBadge } from "@/components/AppShell";
+import { useUser } from "@/lib/auth";
 import { ParamsEditor } from "@/components/DataSource";
 import { ANALYSIS_VERSION, DEFAULT_PARAMS, detectEvents, download, summarise, type Params, type Summary } from "@/lib/market/analysis";
 import { listSessions, loadSessionColumns, type RecordingSession } from "@/lib/market/recorder";
@@ -21,12 +22,22 @@ export const Route = createFileRoute("/studio")({
 interface Results { summary: Summary; sensitivity: { minQty: number; counts: Summary["counts"] }[]; run_utc: string; session: { id: string; started_at: string; columns: number } }
 
 function StudioPage() {
+  const user = useUser();
   const [projects, setProjects] = useState<Project[]>([]);
   const [sessions, setSessions] = useState<RecordingSession[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const refresh = () => listProjects().then(setProjects).catch((e) => setErr(e.message));
-  useEffect(() => { refresh(); listSessions().then(setSessions).catch(() => {}); }, []);
+  useEffect(() => { if (user) { refresh(); listSessions().then(setSessions).catch(() => {}); } }, [user]);
+
+  if (user === null) return (
+    <>
+      <PageHeader title="Research Studio" sub="Saved research projects with reproducible parameters and results." badge={<StatusBadge s="Implemented" />} />
+      <div className="panel p-6 text-sm text-muted-foreground">
+        Your research projects are private to your account. <Link to="/auth" className="text-primary underline">Sign in</Link> to create and run them.
+      </div>
+    </>
+  );
   const active = projects.find((p) => p.id === activeId) ?? null;
 
   return (
