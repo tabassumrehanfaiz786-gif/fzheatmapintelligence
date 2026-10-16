@@ -1,6 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { PageHeader } from "@/components/AppShell";
+import { useUser } from "@/lib/auth";
 import { Heatmap } from "@/components/Heatmap";
 import { exportColumnsCSV, type Column } from "@/lib/market/binance-feed";
 import { deleteSession, listSessions, loadSessionColumns, type RecordingSession } from "@/lib/market/recorder";
@@ -19,6 +20,7 @@ const RANGES = [250, 500, 1000, 1500];
 const WINDOWS = [{ s: 60, l: "1m" }, { s: 300, l: "5m" }, { s: 600, l: "10m" }, { s: 86400, l: "All" }];
 
 function ArchivePage() {
+  const user = useUser();
   const [sessions, setSessions] = useState<RecordingSession[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [active, setActive] = useState<RecordingSession | null>(null);
@@ -28,7 +30,16 @@ function ArchivePage() {
   const [secs, setSecs] = useState(600);
 
   const refresh = () => listSessions().then(setSessions).catch((e) => setError((e as Error).message));
-  useEffect(() => { refresh(); }, []);
+  useEffect(() => { if (user) refresh(); }, [user]);
+
+  if (user === null) return (
+    <>
+      <PageHeader title="Session Archive" sub="Permanently recorded order-book sessions, stored in Lovable Cloud." />
+      <div className="panel p-6 text-sm text-muted-foreground">
+        Your recordings are private to your account. <Link to="/auth" className="text-primary underline">Sign in</Link> to view and replay them.
+      </div>
+    </>
+  );
 
   async function open(s: RecordingSession) {
     setActive(s); setColumns(null); setLoading(true); setError(null);
