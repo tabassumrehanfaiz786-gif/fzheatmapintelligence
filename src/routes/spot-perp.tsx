@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { PageHeader, StatusBadge } from "@/components/AppShell";
 import { FUNDING_SOURCES, VENUES, basisBps, l1Imbalance, mid, type Funding, type Quote } from "@/lib/market/venues";
+import { DualHeatmap } from "@/components/DualHeatmap";
 
 export const Route = createFileRoute("/spot-perp")({
   head: () => ({ meta: [
@@ -103,6 +104,8 @@ function SpotPerp() {
           );
         })}
       </div>
+
+      <DualHeatmap />
 
       <div className="panel mt-4 p-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
