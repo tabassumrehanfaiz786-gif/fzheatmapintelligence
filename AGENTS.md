@@ -17,3 +17,4 @@
 - Cross-venue spot/perp quotes use pure parsers in `src/lib/market/venues.ts` (unit-tested) with page-scoped connections on `/spot-perp` — level-1 data is only needed on that page, so it stays out of the shared depth feed.
 - Liquidity event detection lives in pure, versioned `src/lib/market/analysis.ts` (unit-tested) and is shared by Migration, Integrity, Studio and Assistant — one deterministic rule set keeps results reproducible across pages.
 - AI assistant calls run only in a server function (`src/lib/assistant.functions.ts`) and receive a computed event summary, not raw books — keeps keys server-side and prompts bounded.
+- Spot/perp side-by-side heatmaps use pure helpers in `src/lib/market/dualbook.ts` (unit-tested), polling REST depth 1/s plus aggTrade streams, page-scoped — avoids a second sequenced diff book for futures.
