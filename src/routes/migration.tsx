@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { PageHeader, Stat, StatusBadge } from "@/components/AppShell";
 import { ParamsEditor, SourcePicker, useDataSource } from "@/components/DataSource";
+import { EtfNewsPanel } from "@/components/EtfNewsPanel";
 import { ANALYSIS_VERSION, DEFAULT_PARAMS, detectEvents, download, eventsCSV, summarise, type EventType } from "@/lib/market/analysis";
 
 export const Route = createFileRoute("/migration")({
@@ -68,6 +69,7 @@ function MigrationPage() {
             </table></div>}
       </div>
 
+      <EtfNewsPanel />
       <div className="panel mt-4 p-3 text-xs text-muted-foreground">
         <div className="label-caps mb-1 text-foreground">Method & limitations</div>
         <ul className="list-disc space-y-1 pl-4">

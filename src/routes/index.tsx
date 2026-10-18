@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageHeader, Stat, StatusPill } from "@/components/AppShell";
 import { SOURCE, useFeed } from "@/lib/market/binance-feed";
+import { BookmapScreen } from "@/components/BookmapScreen";
 
 export const Route = createFileRoute("/")({
   head: () => ({ meta: [
@@ -8,6 +9,8 @@ export const Route = createFileRoute("/")({
     { name: "description", content: "Live BTC/USDT order-book status, depth and data freshness from Binance public market data." },
     { property: "og:title", content: "Fz Heat Map Intelligence — Overview" },
     { property: "og:description", content: "Crypto order-book liquidity research dashboard by Faizan Rehan." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
   ] }),
   component: Dashboard,
 });
@@ -32,6 +35,7 @@ function Dashboard() {
   return (
     <>
       <PageHeader title="Fz Heat Map Intelligence" sub="Overview of the live BTC/USDT order book reconstructed from Binance public market data. Read-only — no trading." badge={<StatusPill />} />
+      <BookmapScreen />
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Stat label="Instrument" value="BTC/USDT" hint={`${SOURCE.exchange} · spot`} />
         <Stat label="Mid price" value={b && a ? `$${fmt((a + b) / 2)}` : "—"} hint={b && a ? `Spread $${fmt(a - b)}` : "Not available until synced"} />

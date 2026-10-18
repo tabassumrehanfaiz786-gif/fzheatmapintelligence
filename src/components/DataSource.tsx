@@ -2,18 +2,25 @@ import { useEffect, useState } from "react";
 import { useFeed, type Column } from "@/lib/market/binance-feed";
 import { listSessions, loadSessionColumns, type RecordingSession } from "@/lib/market/recorder";
 import { DEFAULT_PARAMS, type Params } from "@/lib/market/analysis";
+import { useUser } from "@/lib/auth";
 
 /** Lets a page analyse either the live rolling buffer or a permanently recorded session. */
 export function useDataSource() {
   const feed = useFeed();
+  const user = useUser();
   const [sessions, setSessions] = useState<RecordingSession[]>([]);
   const [sel, setSel] = useState<string>("live");
   const [saved, setSaved] = useState<Column[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  useEffect(() => { listSessions().then(setSessions).catch((e) => setError((e as Error).message)); }, []);
   useEffect(() => {
-    if (sel === "live") { setSaved(null); return; }
+    let active = true;
+    setSessions([]); setSaved(null); setSel("live"); setError(null);
+    if (user) listSessions().then((rows) => { if (active) setSessions(rows); }).catch((e) => { if (active) setError((e as Error).message); });
+    return () => { active = false; };
+  }, [user?.id]);
+  useEffect(() => {
+    if (sel === "live" || !user) { setSaved(null); return; }
     setLoading(true); setError(null);
     loadSessionColumns(sel).then(setSaved).catch((e) => setError((e as Error).message)).finally(() => setLoading(false));
   }, [sel]);

@@ -1,8 +1,29 @@
 // Pure statistics joining daily ETF flows, news sentiment and BTC returns.
 // Descriptive only: correlations on ~20 trading days are weak evidence and never causal.
-export const ETF_ANALYSIS_VERSION = "fzhmi-etf 1.0.0";
+export const ETF_ANALYSIS_VERSION = "fzhmi-etf 1.1.0";
 
-export interface FlowRow { date: string; ibit: number | null; fbtc: number | null; gbtc: number | null; arkb: number | null; bitb: number | null; total: number | null }
+export const ETF_ISSUERS = [
+  { key: "ibit", ticker: "IBIT", name: "BlackRock" },
+  { key: "fbtc", ticker: "FBTC", name: "Fidelity" },
+  { key: "gbtc", ticker: "GBTC", name: "Grayscale" },
+  { key: "arkb", ticker: "ARKB", name: "ARK / 21Shares" },
+  { key: "bitb", ticker: "BITB", name: "Bitwise" },
+  { key: "hodl", ticker: "HODL", name: "VanEck" },
+  { key: "brrr", ticker: "BRRR", name: "Valkyrie / CoinShares" },
+  { key: "btco", ticker: "BTCO", name: "Invesco / Galaxy" },
+  { key: "ezbc", ticker: "EZBC", name: "Franklin Templeton" },
+  { key: "btcw", ticker: "BTCW", name: "WisdomTree" },
+] as const;
+
+export function researchChunks(start: string, end: string) {
+  const chunks: { start: string; end: string }[] = [];
+  for (let t = Date.parse(start); t <= Date.parse(end); t += 5 * 864e5) {
+    chunks.push({ start: new Date(t).toISOString().slice(0, 10), end: new Date(Math.min(t + 4 * 864e5, Date.parse(end))).toISOString().slice(0, 10) });
+  }
+  return chunks;
+}
+
+export interface FlowRow { date: string; ibit: number | null; fbtc: number | null; gbtc: number | null; arkb: number | null; bitb: number | null; hodl?: number | null; brrr?: number | null; btco?: number | null; ezbc?: number | null; btcw?: number | null; total: number | null }
 export interface NewsItem { date: string; headline: string; source: string; url: string; category: string; sentiment: number | null }
 export interface DayRow { date: string; flow: number | null; sentiment: number | null; newsCount: number; ret: number | null }
 
@@ -10,7 +31,7 @@ export function pearson(xs: number[], ys: number[]): number | null {
   const n = xs.length; if (n < 3 || n !== ys.length) return null;
   const mx = xs.reduce((a, b) => a + b, 0) / n, my = ys.reduce((a, b) => a + b, 0) / n;
   let sxy = 0, sxx = 0, syy = 0;
-  for (let i = 0; i < n; i++) { const dx = xs[i]! - mx, dy = ys[i]! - my; sxy += dx * dy; sxx += dx * dx; syy += dy * dy; }
+  for (let i = 0; i < n; i++) { const dx = (xs[i] ?? 0) - mx, dy = (ys[i] ?? 0) - my; sxy += dx * dy; sxx += dx * dx; syy += dy * dy; }
   return sxx && syy ? sxy / Math.sqrt(sxx * syy) : null;
 }
 
@@ -27,7 +48,10 @@ export function joinDays(flows: FlowRow[], news: NewsItem[], closes: Record<stri
     const f = flows.find((x) => x.date === date);
     const items = news.filter((x) => x.date === date && x.sentiment !== null);
     const i = sorted.indexOf(date);
-    const ret = i > 0 ? (closes[date]! / closes[sorted[i - 1]!]! - 1) * 100 : null;
+    const previous = sorted[i - 1];
+    const priorClose = previous ? closes[previous] : undefined;
+    const close = closes[date];
+    const ret = i > 0 && close !== undefined && priorClose ? (close / priorClose - 1) * 100 : null;
     return { date, flow: f?.total ?? null, sentiment: items.length ? items.reduce((a, b) => a + (b.sentiment ?? 0), 0) / items.length : null, newsCount: news.filter((x) => x.date === date).length, ret };
   });
 }

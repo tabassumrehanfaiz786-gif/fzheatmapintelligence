@@ -12,6 +12,8 @@ export const Route = createFileRoute("/archive")({
     { name: "description", content: "Permanently recorded BTC/USDT order-book sessions with historical heatmap replay." },
     { property: "og:title", content: "Session Archive · FZ HMI" },
     { property: "og:description", content: "Replay recorded order-book liquidity sessions stored permanently in Lovable Cloud." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
   ] }),
   component: ArchivePage,
 });

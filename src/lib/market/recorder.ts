@@ -70,6 +70,8 @@ export function useRecorder() {
 
   async function start(note?: string) {
     setError(null);
+    const { data: auth } = await supabase.auth.getUser();
+    if (!auth.user) { setError("Sign in to record a private research session."); return; }
     const { data, error: err } = await supabase
       .from("recording_sessions")
       .insert({ symbol: SOURCE.symbol, source: SOURCE.exchange, bucket: BUCKET, note: note ?? null })

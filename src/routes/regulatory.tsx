@@ -1,8 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { PageHeader, StatusBadge } from "@/components/AppShell";
 import { download } from "@/lib/market/analysis";
 import { listProjects, updateProject, type Project } from "@/lib/research";
+import { useUser } from "@/lib/auth";
 
 export const Route = createFileRoute("/regulatory")({
   head: () => ({ meta: [
@@ -26,11 +27,12 @@ const FRAMEWORKS = [
 ];
 
 function RegPage() {
+  const user = useUser();
   const [projects, setProjects] = useState<Project[]>([]);
   const [id, setId] = useState("");
   const [r, setR] = useState<Record<string, string>>({});
   const [msg, setMsg] = useState<string | null>(null);
-  useEffect(() => { listProjects().then(setProjects).catch((e) => setMsg(e.message)); }, []);
+  useEffect(() => { setProjects([]); setId(""); setR({}); setMsg(null); if (user) listProjects().then(setProjects).catch((e) => setMsg(e.message)); }, [user?.id]);
   const p = projects.find((x) => x.id === id);
   useEffect(() => { if (!p) return; const rep = p.report as Record<string, string>;
     setR({ ...rep, [SECTIONS[0]!]: rep[SECTIONS[0]!] || p.question, [SECTIONS[3]!]: rep[SECTIONS[3]!] || "", [SECTIONS[4]!]: rep[SECTIONS[4]!] || p.notes }); }, [id]);
@@ -39,6 +41,7 @@ function RegPage() {
   return (
     <>
       <PageHeader title="Regulatory Research" sub="Turn a Research Studio project into a structured eight-part report linking what was observed to the relevant legal frameworks, with the limits of the evidence stated." badge={<StatusBadge s="Implemented" />} />
+      {!user && <p className="mb-4 text-sm text-muted-foreground">{user === undefined ? "Checking account…" : <>Your research is private. <Link to="/auth" className="text-primary underline">Sign in</Link> to view your reports.</>}</p>}
       <div className="panel mb-4 flex flex-wrap items-center gap-2 p-3 text-xs">
         <span className="label-caps">Project</span>
         <select value={id} onChange={(e) => setId(e.target.value)} className="rounded-sm border bg-background px-2 py-1">
