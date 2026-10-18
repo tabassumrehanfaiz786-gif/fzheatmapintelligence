@@ -8,6 +8,8 @@ export const Route = createFileRoute("/methodology")({
     { name: "description", content: "Data sources, reconstruction method, limitations and feature-status register of FZ HMI." },
     { property: "og:title", content: "Methodology & About · FZ HMI" },
     { property: "og:description", content: "How Fz Heat Map Intelligence sources and reconstructs order-book data." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
   ] }),
   component: Methodology,
 });
@@ -29,6 +31,8 @@ const REGISTER: [string, number, FeatureStatus][] = [
   ["Research Studio", 5, "Implemented"],
   ["Regulatory research workspace", 6, "Implemented"],
   ["AI research assistant", 6, "Implemented"],
+  ["Overview liquidity terminal with trade bubbles", 2, "Implemented"],
+  ["Ten-issuer ETF flows × news research", 6, "In Progress"],
 ];
 
 function Methodology() {
@@ -53,7 +57,7 @@ function Methodology() {
             <li>Only the top 1000 levels per side are visible; far levels may be incomplete.</li>
             <li>One exchange only — not the whole market.</li>
             <li>Timestamps are the browser's receive time (UTC); clocks can drift.</li>
-            <li>Data is held in the open tab only until permanent storage is added.</li>
+            <li>Live history is tab-only; signed-in users can record depth sessions permanently. Trade bubbles are not included in depth recordings.</li>
           </ul>
         </section>
         <section className="panel p-4">

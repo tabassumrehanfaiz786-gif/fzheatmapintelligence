@@ -13,6 +13,7 @@ export const NAV = [
   { to: "/regulatory", label: "Regulatory Research" },
   { to: "/assistant", label: "AI Research Assistant" },
   { to: "/methodology", label: "Methodology & About" },
+  { to: "/auth", label: "Account / Sign in" },
 ] as const;
 
 export function StatusPill() {

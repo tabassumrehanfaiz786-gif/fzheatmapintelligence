@@ -94,3 +94,10 @@
   text-transform: uppercase;
   color: var(--color-muted-foreground);
 }
+
+.research-markdown h1, .research-markdown h2, .research-markdown h3 { font-weight: 600; margin: 1rem 0 0.5rem; }
+.research-markdown p { margin: 0.5rem 0; }
+.research-markdown ul, .research-markdown ol { padding-left: 1.25rem; margin: 0.5rem 0; }
+.research-markdown ul { list-style: disc; }
+.research-markdown ol { list-style: decimal; }
+.research-markdown a { color: var(--primary); text-decoration: underline; }
