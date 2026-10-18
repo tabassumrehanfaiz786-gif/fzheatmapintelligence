@@ -5,8 +5,9 @@ import ReactMarkdown from "react-markdown";
 import { supabase } from "@/integrations/supabase/client";
 import { useUser } from "@/lib/auth";
 import { explainAndSave, fetchEtfFlows, fetchEtfNews } from "@/lib/etf.functions";
-import { etfStats, joinDays, type EtfStats, type FlowRow, type NewsItem } from "@/lib/market/etf";
+import { ETF_ISSUERS, researchChunks, etfStats, joinDays, type EtfStats, type FlowRow, type NewsItem } from "@/lib/market/etf";
 import { download } from "@/lib/market/analysis";
+import { Button } from "@/components/ui/button";
 
 interface Saved { id: string; created_at: string; period_start: string; period_end: string; explanation: string; stats: unknown; flows: unknown; news: unknown; sources: unknown }
 const iso = (d: Date) => d.toISOString().slice(0, 10);
@@ -14,8 +15,9 @@ const fmtR = (x: { r: number | null; n: number }) => (x.r === null ? `n/a (n=${x
 
 async function btcCloses(): Promise<Record<string, number>> {
   const r = await fetch("https://data-api.binance.vision/api/v3/klines?symbol=BTCUSDT&interval=1d&limit=40");
+  if (!r.ok) throw new Error(`BTC daily prices unavailable (${r.status}).`);
   const k = (await r.json()) as [number, string, string, string, string][];
-  return Object.fromEntries(k.map((x) => [iso(new Date(x[0])), Number(x[4])]));
+  return Object.fromEntries(k.filter((x) => x[0] + 864e5 <= Date.now()).map((x) => [iso(new Date(x[0])), Number(x[4])]));
 }
 
 export function EtfNewsPanel() {
@@ -28,25 +30,38 @@ export function EtfNewsPanel() {
   const [saved, setSaved] = useState<Saved[]>([]);
 
   async function loadSaved() {
-    const { data } = await supabase.from("etf_news_analyses").select("*").order("created_at", { ascending: false }).limit(30);
+    if (!user) return;
+    const { data, error } = await supabase.from("etf_news_analyses").select("*").order("created_at", { ascending: false }).limit(30);
+    if (error) { setErr(error.message); return; }
     setSaved((data ?? []) as Saved[]);
   }
-  useEffect(() => { if (user) loadSaved(); }, [user]);
+  useEffect(() => { setSaved([]); setFlows([]); setNews([]); setRows([]); setStats(null); setExplanation(""); if (user) loadSaved(); }, [user?.id]);
 
   async function run() {
+    if (!user || step) return;
     setErr(null); setExplanation("");
-    const end = new Date(), start = new Date(Date.now() - 30 * 864e5);
+    const end = new Date(Date.now() - 864e5), start = new Date(Date.now() - 30 * 864e5);
     const period = { start: iso(start), end: iso(end) };
     try {
-      setStep("Looking up ETF flows and news (about 1 minute)…");
-      const [fl, nw, closes] = await Promise.all([f1({ data: period }), f2({ data: period }), btcCloses()]);
-      const fr = fl.rows.filter((r) => r.date >= period.start).sort((a, b) => a.date.localeCompare(b.date));
-      const nr = nw.items.filter((n) => n.date >= period.start && n.date <= period.end);
+      const chunks = researchChunks(period.start, period.end);
+      const allFlows: FlowRow[] = [], allNews: NewsItem[] = [], allSources: string[] = [];
+      const closes = await btcCloses();
+      for (let i = 0; i < chunks.length; i += 2) {
+        setStep(`Researching ETF flows and news · periods ${i + 1}–${Math.min(i + 2, chunks.length)} of ${chunks.length}…`);
+        const results = await Promise.all(chunks.slice(i, i + 2).map(async (chunk) => {
+          const [fl, nw] = await Promise.all([f1({ data: chunk }), f2({ data: chunk })]);
+          return { fl, nw };
+        }));
+        for (const { fl, nw } of results) { allFlows.push(...fl.rows); allNews.push(...nw.items); allSources.push(...fl.sources); }
+      }
+      const fr = [...new Map(allFlows.filter((r) => r.date >= period.start && r.date <= period.end).map((r) => [r.date, r])).values()].sort((a, b) => a.date.localeCompare(b.date));
+      const nr = [...new Map(allNews.filter((n) => n.date >= period.start && n.date <= period.end).map((n) => [n.url, n])).values()].slice(0, 80);
+      const sourceURLs = [...new Set([...allSources, ...nr.map((n) => n.url), "https://data-api.binance.vision/api/v3/klines?symbol=BTCUSDT&interval=1d&limit=40"])].slice(0, 40);
       const jd = joinDays(fr, nr, closes), st = etfStats(jd);
-      setFlows(fr); setNews(nr); setRows(jd); setStats(st); setSources(fl.sources);
+      setFlows(fr); setNews(nr); setRows(jd); setStats(st); setSources(sourceURLs);
       setStep("AI is analysing and saving to your research…");
       const daily = jd.map((r) => `${r.date}, ${r.flow ?? "NA"}, ${r.sentiment?.toFixed(2) ?? "NA"}, ${r.ret?.toFixed(2) ?? "NA"}`).join("\n");
-      const res = await f3({ data: { period, flows: fr, news: nr, stats: st as unknown as Record<string, unknown>, sources: fl.sources.slice(0, 40), daily } });
+      const res = await f3({ data: { period, flows: fr, news: nr, stats: { ...st, dailyRows: jd, closes, alignment: "UTC completed BTC daily closes; ETF flows reported after US market close", sentimentMethod: "Parallel estimated headline sentiment [-1,1]", retrieved_utc: new Date().toISOString() }, sources: sourceURLs, daily } });
       setExplanation(res.explanation); await loadSaved();
     } catch (e) { setErr(e instanceof Error ? e.message : String(e)); }
     setStep(null);
@@ -55,19 +70,20 @@ export function EtfNewsPanel() {
   function open(s: Saved) {
     const fr = s.flows as FlowRow[], nr = s.news as NewsItem[];
     setFlows(fr); setNews(nr); setStats(s.stats as EtfStats); setExplanation(s.explanation); setSources(s.sources as string[]);
-    setRows(joinDays(fr, nr, {}));
+    const recorded = s.stats as EtfStats & { dailyRows?: ReturnType<typeof joinDays> };
+    setRows(recorded.dailyRows ?? joinDays(fr, nr, {}));
   }
 
   const maxAbs = Math.max(1, ...rows.map((r) => Math.abs(r.flow ?? 0)));
 
   return (
-    <div className="panel mt-4 p-3">
+    <section className="mt-6 border-y py-4" aria-label="ETF flows and news research">
       <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
         <div>
           <div className="label-caps text-foreground">Spot bitcoin ETF flows × news · last 30 days</div>
-          <p className="text-xs text-muted-foreground">BlackRock IBIT, Fidelity FBTC, Grayscale GBTC, ARK ARKB, Bitwise BITB. Figures are looked up from published sources (links below) — verify before citing.</p>
+          <p className="max-w-3xl text-xs text-muted-foreground">Ten selected US spot bitcoin ETF issuers, including BlackRock, Fidelity and Grayscale — not a current assets ranking. Published net fund flows ($M), estimated news sentiment and completed UTC BTC returns. Missing values are never filled with estimates.</p>
         </div>
-        {user ? <button disabled={!!step} onClick={run} className="rounded-sm bg-primary px-3 py-1.5 text-xs text-primary-foreground disabled:opacity-50">{step ? "Working…" : "Run & record analysis"}</button>
+        {user ? <Button size="sm" disabled={!!step} onClick={run}>{step ? "Working…" : "Run & record analysis"}</Button>
           : user === null && <Link to="/auth" className="rounded-sm border px-3 py-1.5 text-xs">Sign in to run & record</Link>}
       </div>
       {step && <p className="text-xs text-warn">{step}</p>}
@@ -113,8 +129,8 @@ export function EtfNewsPanel() {
         </details>)}
       {flows.length > 0 && (
         <details className="mt-2 text-xs"><summary className="cursor-pointer label-caps">Flows by issuer ($M) & sources</summary>
-          <table className="mt-1 w-full font-mono"><thead className="text-muted-foreground"><tr><th className="text-left">Date</th><th>IBIT</th><th>FBTC</th><th>GBTC</th><th>ARKB</th><th>BITB</th><th>Total</th></tr></thead>
-            <tbody>{flows.map((f) => <tr key={f.date} className="text-center"><td className="text-left">{f.date}</td>{[f.ibit, f.fbtc, f.gbtc, f.arkb, f.bitb, f.total].map((v, i) => <td key={i}>{v ?? "—"}</td>)}</tr>)}</tbody></table>
+          <div className="mt-2 overflow-x-auto"><table className="w-full min-w-[1000px] font-mono"><thead className="text-muted-foreground"><tr><th className="text-left">Date</th>{ETF_ISSUERS.map((i) => <th key={i.key} className="px-2" title={i.name}>{i.ticker}<div className="font-sans text-[10px] font-normal">{i.name}</div></th>)}<th>All ETFs</th></tr></thead>
+            <tbody>{flows.map((f) => <tr key={f.date} className="border-t text-center"><td className="py-1 text-left">{f.date}</td>{[...ETF_ISSUERS.map((i) => f[i.key]), f.total].map((v, i) => <td key={i} className={v == null ? "text-muted-foreground" : v >= 0 ? "text-bid" : "text-ask"}>{v ?? "—"}</td>)}</tr>)}</tbody></table></div>
           <ul className="mt-1">{sources.map((s) => <li key={s}><a className="underline" href={s} target="_blank" rel="noreferrer">{s}</a></li>)}</ul>
         </details>)}
 
@@ -125,11 +141,11 @@ export function EtfNewsPanel() {
             <li key={s.id} className="flex flex-wrap items-center gap-2">
               <span className="font-mono">{new Date(s.created_at).toISOString().slice(0, 16).replace("T", " ")}Z</span>
               <span className="text-muted-foreground">{s.period_start} → {s.period_end}</span>
-              <button className="underline" onClick={() => open(s)}>Open</button>
-              <button className="underline" onClick={() => download(`fzhmi_etf_news_${s.period_end}.json`, JSON.stringify(s, null, 2), "application/json")}>Export JSON</button>
-              <button className="text-destructive underline" onClick={async () => { await supabase.from("etf_news_analyses").delete().eq("id", s.id); loadSaved(); }}>Delete</button>
+              <Button size="sm" variant="link" onClick={() => open(s)}>Open</Button>
+              <Button size="sm" variant="link" onClick={() => download(`fzhmi_etf_news_${s.period_end}.json`, JSON.stringify(s, null, 2), "application/json")}>Export JSON</Button>
+              <Button size="sm" variant="ghost" className="text-destructive" onClick={async () => { const { error } = await supabase.from("etf_news_analyses").delete().eq("id", s.id); if (error) setErr(error.message); else await loadSaved(); }}>Delete</Button>
             </li>))}</ul>
         </div>)}
-    </div>
+    </section>
   );
 }

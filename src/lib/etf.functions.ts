@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { ETF_ISSUERS, type FlowRow } from "@/lib/market/etf";
 
 const PARALLEL = "https://connector-gateway.lovable.dev/parallel/v1/responses";
 const num = { type: ["number", "null"] };
@@ -25,13 +26,14 @@ const Period = z.object({ start: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), end: z
 
 export const fetchEtfFlows = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => Period.parse(d))
+  .inputValidator((d: unknown) => Period.refine((p) => Date.parse(p.end) >= Date.parse(p.start) && Date.parse(p.end) - Date.parse(p.start) <= 4 * 864e5, "Request up to five calendar days at a time.").parse(d))
   .handler(async ({ data }) => {
-    const row = { type: "object", additionalProperties: false, required: ["date", "ibit", "fbtc", "gbtc", "arkb", "bitb", "total"], properties: { date: str, ibit: num, fbtc: num, gbtc: num, arkb: num, bitb: num, total: num } };
+    const fields = Object.fromEntries(ETF_ISSUERS.map((i) => [i.key, num]));
+    const row = { type: "object", additionalProperties: false, required: ["date", ...ETF_ISSUERS.map((i) => i.key), "total"], properties: { date: str, ...fields, total: num } };
     const schema = { type: "object", additionalProperties: false, required: ["rows", "sources"], properties: { rows: { type: "array", items: row }, sources: { type: "array", items: str } } };
     const out = await parallel(
-      `Daily net flows of US spot bitcoin ETFs in US$ millions for every US trading day from ${data.start} to ${data.end}. Columns: IBIT (BlackRock), FBTC (Fidelity), GBTC (Grayscale), ARKB (ARK 21Shares), BITB (Bitwise), and total net flow across all US spot bitcoin ETFs. Prefer Farside Investors' bitcoin ETF flow table or issuer data. Dates as YYYY-MM-DD. Return null rather than guess any value. List the source URLs used.`, schema);
-    return out as { rows: { date: string; ibit: number | null; fbtc: number | null; gbtc: number | null; arkb: number | null; bitb: number | null; total: number | null }[]; sources: string[] };
+      `Daily net flows of US spot bitcoin ETFs in US$ millions for every US trading day from ${data.start} to ${data.end}, at most 5 rows. Columns: ${ETF_ISSUERS.map((i) => `${i.ticker} (${i.name})`).join(", ")}, and total net flow across ALL US spot bitcoin ETFs (not just these ten funds). These are ten selected issuers, not a verified current ranking. Prefer Farside Investors' bitcoin ETF flow table or issuer data. Check current fund names and ownership; do not treat an issuer rename as a new fund. Dates as YYYY-MM-DD. Return null rather than guess any value. For missing trading days still include a row of nulls. Do not include weekends or exchange holidays. List the source URLs used.`, schema);
+    return out as { rows: FlowRow[]; sources: string[] };
   });
 
 export const fetchEtfNews = createServerFn({ method: "POST" })
@@ -41,7 +43,7 @@ export const fetchEtfNews = createServerFn({ method: "POST" })
     const item = { type: "object", additionalProperties: false, required: ["date", "headline", "source", "url", "category", "sentiment"], properties: { date: str, headline: str, source: str, url: str, category: str, sentiment: num } };
     const schema = { type: "object", additionalProperties: false, required: ["items"], properties: { items: { type: "array", items: item } } };
     const out = await parallel(
-      `The most market-relevant bitcoin and bitcoin-ETF news headlines published between ${data.start} and ${data.end} (about 1-3 per day, max 60): ETF issuers (BlackRock, Fidelity, Grayscale), SEC/regulation, macro (Fed, CPI), large institutional buys/sells, exchange events. For each: publication date YYYY-MM-DD, headline, outlet, article URL, category (etf, regulation, macro, institutional, exchange, other), and sentiment for bitcoin from -1 (very negative) to 1 (very positive), or null if unclear. Only real articles with working URLs; never invent.`, schema);
+      `Up to five most market-relevant real bitcoin and bitcoin-ETF headlines published between ${data.start} and ${data.end}: ETF issuers, SEC/regulation, macro (Fed, CPI), institutional flows, exchange events. For each: publication date YYYY-MM-DD, headline, outlet, article URL, category (etf, regulation, macro, institutional, exchange, other), and estimated sentiment for bitcoin from -1 to 1, or null if unclear. Sentiment is a model score, not observed price impact. Only real articles with working URLs; never invent.`, schema);
     return out as { items: { date: string; headline: string; source: string; url: string; category: string; sentiment: number | null }[] };
   });
 
@@ -61,8 +63,8 @@ export const explainAndSave = createServerFn({ method: "POST" })
       headers: { "Lovable-API-Key": key, "X-Lovable-AIG-SDK": "fetch", "Content-Type": "application/json" },
       body: JSON.stringify({
         model: "openai/gpt-6-astra", stream: true, store: false, reasoning: { effort: "medium" },
-        instructions: `You are a cautious market-microstructure research assistant in FZ HMI. Using ONLY the data given, explain in plain markdown (max ~400 words): 1) what ETF flows did over the period, 2) whether flows and news sentiment moved together or diverged and on which days, 3) plausible explanations for divergences (e.g. basis-trade unwinds, rebalancing, macro, reporting lags, news priced in earlier), 4) how weak or strong the evidence is given sample size n. Never claim causation, never invent numbers, events or citations, no trading advice or predictions. Cite headlines by date when relevant.`,
-        input: [{ role: "user", content: `Period ${data.period.start}..${data.period.end}\nSTATS:${JSON.stringify(data.stats)}\nDAILY (date, total flow $M, mean news sentiment, BTC return %):\n${data.daily}\nHEADLINES:\n${data.news.slice(0, 60).map((n: { date: string; headline: string; sentiment: number | null }) => `${n.date} [${n.sentiment}] ${n.headline}`).join("\n")}` }],
+        instructions: `You are a cautious market-microstructure research assistant in FZ HMI. Using ONLY the data given, explain in plain markdown (max ~500 words): 1) net ETF flows and which named issuers contributed on observed days, 2) whether flows, estimated news sentiment and same/next-day BTC returns aligned or diverged, citing actual dates and correlation sample sizes, 3) plausible explanations for divergences (basis-trade unwinds, rebalancing, macro, reporting lags, news priced in earlier) labelled unverified hypotheses, 4) missing-data and small-sample limitations. An issuer's ETF net flow is not evidence that the institution bought bitcoin for its own account. Sentiment is an AI-estimated score, not measured impact. BTC returns are UTC daily; ETF flows are reported after US close, so timing does not establish causation. Never invent numbers, events or citations, no trading advice or predictions. Use only supplied article links.`,
+        input: [{ role: "user", content: `Period ${data.period.start}..${data.period.end}\nSTATS:${JSON.stringify(data.stats)}\nISSUER FLOWS:${JSON.stringify(data.flows)}\nDAILY (date, total flow $M, mean news sentiment, BTC return %):\n${data.daily}\nHEADLINES:\n${data.news.slice(0, 60).map((n: { date: string; headline: string; sentiment: number | null; url: string }) => `${n.date} [${n.sentiment}] ${n.headline} ${n.url}`).join("\n")}` }],
       }),
     });
     if (r.status === 429) throw new Error("Too many AI requests — wait a moment.");
@@ -80,6 +82,7 @@ export const explainAndSave = createServerFn({ method: "POST" })
         try { const e = JSON.parse(d) as { type?: string; delta?: string }; if (e.type === "response.output_text.delta" && e.delta) explanation += e.delta; } catch { /* partial */ }
       }
     }
+    if (!explanation.trim()) throw new Error("AI returned no explanation. The analysis has not been saved.");
     const { data: row, error } = await context.supabase.from("etf_news_analyses").insert({
       user_id: context.userId, period_start: data.period.start, period_end: data.period.end,
       flows: data.flows, news: data.news, stats: data.stats, explanation, sources: data.sources,
