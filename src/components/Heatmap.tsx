@@ -14,7 +14,7 @@ export function Heatmap({ columns, range, seconds, tick }: { columns: Column[]; 
     const cv = ref.current; if (!cv) return;
     const dpr = window.devicePixelRatio || 1, W = cv.clientWidth, H = cv.clientHeight;
     cv.width = W * dpr; cv.height = H * dpr;
-    const g = cv.getContext("2d")!; g.scale(dpr, dpr);
+    const g = cv.getContext("2d"); if (!g) return; g.scale(dpr, dpr);
     const css = getComputedStyle(document.documentElement);
     g.fillStyle = css.getPropertyValue("--background"); g.fillRect(0, 0, W, H);
     if (!view.length) return;
@@ -27,17 +27,17 @@ export function Heatmap({ columns, range, seconds, tick }: { columns: Column[]; 
       for (const [p, v] of c.levels) {
         if (p < lo || p > hi) continue;
         const q = v.bid + v.ask, a = Math.log1p(q) / Math.log1p(max || 1);
-        g.fillStyle = v.bid >= v.ask ? `oklch(0.76 0.14 170 / ${a})` : `oklch(0.68 0.2 22 / ${a})`;
+        g.fillStyle = css.getPropertyValue(v.bid >= v.ask ? "--bid" : "--ask"); g.globalAlpha = a;
         g.fillRect((i + off) * cw, yOf(p + BUCKET), Math.ceil(cw), Math.ceil(rh));
       }
     });
-    g.strokeStyle = "oklch(0.8 0.15 75)"; g.lineWidth = 1.5; g.beginPath();
+    g.globalAlpha = 1; g.strokeStyle = css.getPropertyValue("--primary"); g.lineWidth = 1.5; g.beginPath();
     view.forEach((c, i) => { const x = (i + off + 0.5) * cw, y = yOf(c.mid); i ? g.lineTo(x, y) : g.moveTo(x, y); });
     g.stroke();
-    g.fillStyle = "oklch(0.66 0.02 245)"; g.font = "10px JetBrains Mono, monospace";
+    g.fillStyle = css.getPropertyValue("--muted-foreground"); g.font = "10px JetBrains Mono, monospace";
     for (let k = 0; k <= 6; k++) { const p = lo + ((hi - lo) * k) / 6; g.fillText(p.toFixed(0), 4, yOf(p) - 2); }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tick, range, seconds]);
+  }, [tick, range, seconds, columns]);
 
   function onMove(e: React.MouseEvent<HTMLCanvasElement>) {
     const r = e.currentTarget.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
