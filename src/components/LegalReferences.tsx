@@ -5,6 +5,7 @@ export const LEGAL_REFERENCES = [
   { name: "MiCA · Articles 86, 91 and 92", url: "https://eur-lex.europa.eu/eli/reg/2023/1114/oj/eng", status: "EU legislation", note: "Article 91 prohibits market manipulation; Article 92 concerns prevention and detection. Article 86 defines Title VI scope; does not establish UK coverage." },
   { name: "FCA · Suspicious transaction and order reports", url: "https://www.fca.org.uk/markets/market-abuse/suspicious-transaction-and-order-reports", status: "Regulator guidance", note: "Reporting duties depend on role and instrument. Research drafts are not the official form and are never submitted by this app." },
   { name: "CPR Part 35 & Practice Direction 35", url: "https://www.justice.gov.uk/courts/procedure-rules/civil/rules/part35", status: "Civil procedure rules", note: "Expert duties and case-specific requirements are not established by an automated memorandum. No statement of truth is supplied." },
+  { name: "FCA · Da Vinci Invest enforcement outcome (2015)", url: "https://www.fca.org.uk/news/press-releases/fca-secures-high-court-judgment-awarding-injunction-and-over-%C2%A37-million", status: "Regulator case summary · not the judgment", note: "FCA reports layering in 186 UK-listed shares and High Court penalties. Different instruments and facts: no automatic inference about crypto trading." },
 ];
 
 export function LegalReferences() {

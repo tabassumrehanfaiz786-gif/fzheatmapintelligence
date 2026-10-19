@@ -1,7 +1,8 @@
 # Research upgrades
-- [ ] Legal reference and observed-indicator matrix with scope warnings.
-- [ ] Alternative-explanation assessments with explicit missing evidence.
-- [ ] Two openly simulated, reproducible reviewer studies.
-- [ ] SHA-256 analysis bundles, verification and saved-run manifests.
-- [ ] Research-only STOR-style draft and academic memorandum exports.
-- [ ] Test rules, downloads and desktop/mobile research workflow.
+- [x] Legal reference and observed-indicator matrix with scope warnings.
+- [x] Alternative-explanation assessments with explicit missing evidence.
+- [x] Two openly simulated, reproducible reviewer studies.
+- [x] SHA-256 analysis bundles, verification and saved-run manifests.
+- [x] Research-only STOR-style draft and academic memorandum exports.
+- [x] Test rules, downloads and desktop/mobile public research workflow.
+- [ ] Verify saved-run evidence reads back in a private project — blocked: no signed-up account exists.
