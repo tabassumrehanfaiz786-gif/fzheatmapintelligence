@@ -4,6 +4,7 @@ import { PageHeader, StatusBadge } from "@/components/AppShell";
 import { download } from "@/lib/market/analysis";
 import { listProjects, updateProject, type Project } from "@/lib/research";
 import { useUser } from "@/lib/auth";
+import { EvidenceWorkbench } from "@/components/EvidenceWorkbench";
 
 export const Route = createFileRoute("/regulatory")({
   head: () => ({ meta: [
@@ -68,6 +69,7 @@ function RegPage() {
             <p className="mt-3 text-muted-foreground">This is a starting list, not legal advice. Check each source and its current status before citing it.</p>
           </div>
         </div>)}
+      <EvidenceWorkbench />
     </>
   );
 }

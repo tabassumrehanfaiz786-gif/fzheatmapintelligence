@@ -1,5 +1,8 @@
-# Remaining improvements
-- [ ] Add front-page live liquidity heatmap with time windows, trade bubbles and depth ladder.
-- [ ] Expand ETF research to ten named issuers and place it on Liquidity Migration.
-- [ ] Preserve daily BTC comparisons and connect saved ETF research to the assistant.
-- [ ] Prevent signed-out private-data reads and verify the flows.
+# Research upgrades
+- [x] Legal reference and observed-indicator matrix with scope warnings.
+- [x] Alternative-explanation assessments with explicit missing evidence.
+- [x] Two openly simulated, reproducible reviewer studies.
+- [x] SHA-256 analysis bundles, verification and saved-run manifests.
+- [x] Research-only STOR-style draft and academic memorandum exports.
+- [x] Test rules, downloads and desktop/mobile public research workflow.
+- [ ] Verify saved-run evidence reads back in a private project — blocked: no signed-up account exists.

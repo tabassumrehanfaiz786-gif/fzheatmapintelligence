@@ -3,6 +3,7 @@ import { useFeed, type Column } from "@/lib/market/binance-feed";
 import { listSessions, loadSessionColumns, type RecordingSession } from "@/lib/market/recorder";
 import { DEFAULT_PARAMS, type Params } from "@/lib/market/analysis";
 import { useUser } from "@/lib/auth";
+import { Button } from "@/components/ui/button";
 
 /** Lets a page analyse either the live rolling buffer or a permanently recorded session. */
 export function useDataSource() {
@@ -62,7 +63,7 @@ export function ParamsEditor({ p, onChange }: { p: Params; onChange: (p: Params)
             className="mt-1 w-full rounded-sm border bg-background px-2 py-1 font-mono" />
         </label>
       ))}
-      <button onClick={() => onChange(DEFAULT_PARAMS)} className="self-end rounded-sm border px-2 py-1 text-xs hover:bg-accent">Reset defaults</button>
+      <Button variant="outline" size="sm" onClick={() => onChange(DEFAULT_PARAMS)} className="self-end">Reset defaults</Button>
     </div>
   );
 }

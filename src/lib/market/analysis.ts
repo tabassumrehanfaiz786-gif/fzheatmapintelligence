@@ -85,7 +85,10 @@ export function summarise(cols: Column[], ev: LiquidityEvent[]): Summary {
 }
 
 export function download(name: string, body: string, type: string) {
-  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([body], { type })); a.download = name; a.click();
+  const url = URL.createObjectURL(new Blob([body], { type }));
+  const a = document.createElement("a"); a.href = url; a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 30_000);
 }
 export function eventsCSV(ev: LiquidityEvent[]) {
   const h = "id,type,timestamp_utc,side,price,qty,before,after,mid,distance,lifetime_s,related_id,to_price";

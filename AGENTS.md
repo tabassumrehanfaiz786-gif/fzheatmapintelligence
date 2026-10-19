@@ -20,3 +20,5 @@
 - Spot/perp side-by-side heatmaps use pure helpers in `src/lib/market/dualbook.ts` (unit-tested), polling REST depth 1/s plus aggTrade streams, page-scoped — avoids a second sequenced diff book for futures.
 - The overview liquidity terminal reuses the shared sequenced depth feed and a page-scoped public aggregate-trade stream — avoids duplicate depth connections.
 - ETF issuer definitions and research chunking live in the pure ETF module; daily price comparisons are stored with analysis statistics — preserves reproducible reopening without a second price fetch.
+- Evidence assessments, canonical hashing and memorandum generation live in the pure evidence module, with a shared workbench across Integrity, Studio and Regulatory; saved project results carry their evidence bundle — keeps exports and saved runs reproducible without changing private-data permissions.
+- Reviewer datasets are explicitly synthetic teaching fixtures and never seeded as observed exchange records — enables public review without misleading research claims.

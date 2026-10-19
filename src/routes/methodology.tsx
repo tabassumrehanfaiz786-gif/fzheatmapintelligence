@@ -33,6 +33,11 @@ const REGISTER: [string, number, FeatureStatus][] = [
   ["AI research assistant", 6, "Implemented"],
   ["Overview liquidity terminal with trade bubbles", 2, "Implemented"],
   ["Ten-issuer ETF flows × news research", 6, "In Progress"],
+  ["Legal reference and observed-indicator matrix", 6, "Implemented"],
+  ["Alternative-explanation evidence assessment", 5, "Tested"],
+  ["Two simulated reviewer studies", 5, "Tested"],
+  ["SHA-256 evidence bundles and verification", 5, "Tested"],
+  ["Research-only STOR / academic memorandum exports", 6, "Implemented"],
 ];
 
 function Methodology() {

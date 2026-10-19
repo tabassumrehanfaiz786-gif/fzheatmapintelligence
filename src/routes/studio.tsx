@@ -6,6 +6,8 @@ import { ParamsEditor } from "@/components/DataSource";
 import { ANALYSIS_VERSION, DEFAULT_PARAMS, detectEvents, download, summarise, type Params, type Summary } from "@/lib/market/analysis";
 import { listSessions, loadSessionColumns, type RecordingSession } from "@/lib/market/recorder";
 import { createProject, deleteProject, listProjects, updateProject, type Project } from "@/lib/research";
+import { EvidenceWorkbench } from "@/components/EvidenceWorkbench";
+import { analysisPayload, evidenceBundle } from "@/lib/market/evidence";
 
 export const Route = createFileRoute("/studio")({
   head: () => ({ meta: [
@@ -19,7 +21,7 @@ export const Route = createFileRoute("/studio")({
   component: StudioPage,
 });
 
-interface Results { summary: Summary; sensitivity: { minQty: number; counts: Summary["counts"] }[]; run_utc: string; session: { id: string; started_at: string; columns: number } }
+interface Results { summary: Summary; sensitivity: { minQty: number; counts: Summary["counts"] }[]; run_utc: string; session: { id: string; started_at: string; columns: number }; evidence?: Awaited<ReturnType<typeof evidenceBundle>> }
 
 function StudioPage() {
   const user = useUser();
@@ -36,6 +38,7 @@ function StudioPage() {
       <div className="panel p-6 text-sm text-muted-foreground">
         Your research projects are private to your account. <Link to="/auth" className="text-primary underline">Sign in</Link> to create and run them.
       </div>
+      <EvidenceWorkbench />
     </>
   );
   const active = projects.find((p) => p.id === activeId) ?? null;
@@ -55,6 +58,7 @@ function StudioPage() {
         {active ? <Editor key={active.id} p={active} sessions={sessions} onSaved={refresh} onDelete={async () => { await deleteProject(active.id); setActiveId(null); refresh(); }} /> :
           <div className="panel p-6 text-sm text-muted-foreground">Pick a project or create one. To analyse a session, first record one on the Live Heatmap page.</div>}
       </div>
+      <EvidenceWorkbench />
     </>
   );
 }
@@ -71,7 +75,8 @@ function Editor({ p, sessions, onSaved, onDelete }: { p: Project; sessions: Reco
     const cols = await loadSessionColumns(s.id);
     const summary = summarise(cols, detectEvents(cols, params));
     const sensitivity = [0.5, 1, 2].map((k) => ({ minQty: params.minQty * k, counts: summarise(cols, detectEvents(cols, { ...params, minQty: params.minQty * k })).counts }));
-    const r: Results = { summary, sensitivity, run_utc: new Date().toISOString(), session: { id: s.id, started_at: s.started_at, columns: cols.length } };
+    const evidence = await evidenceBundle(analysisPayload(cols, params, `${s.source} · ${s.symbol} · session ${s.id}`));
+    const r: Results = { summary, sensitivity, evidence, run_utc: new Date().toISOString(), session: { id: s.id, started_at: s.started_at, columns: cols.length } };
     setResults(r); await save({ results: r as never, software_version: ANALYSIS_VERSION });
   };
   const inp = "mt-1 w-full rounded-sm border bg-background px-2 py-1.5 text-sm";

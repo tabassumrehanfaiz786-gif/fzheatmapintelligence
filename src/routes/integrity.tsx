@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { PageHeader, Stat, StatusBadge } from "@/components/AppShell";
 import { ParamsEditor, SourcePicker, useDataSource } from "@/components/DataSource";
 import { DEFAULT_PARAMS, detectEvents, download, eventsCSV, summarise, ANALYSIS_VERSION } from "@/lib/market/analysis";
+import { EvidenceWorkbench } from "@/components/EvidenceWorkbench";
 
 export const Route = createFileRoute("/integrity")({
   head: () => ({ meta: [
@@ -57,6 +58,7 @@ function IntegrityPage() {
         </div>
       </div>
 
+      <EvidenceWorkbench />
       <div className="panel mt-4 p-3 text-xs text-muted-foreground">
         <div className="label-caps mb-1 text-foreground">Limitations</div>
         <ul className="list-disc space-y-1 pl-4">
