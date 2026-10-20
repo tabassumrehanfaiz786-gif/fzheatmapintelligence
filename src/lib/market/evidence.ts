@@ -1,7 +1,7 @@
 import { ANALYSIS_VERSION, detectEvents, summarise, type Params, type LiquidityEvent } from "./analysis";
 import type { Column } from "./binance-feed";
 
-export const EVIDENCE_VERSION = "fzhmi-evidence 1.0.0";
+export const EVIDENCE_VERSION = "fzhmi-evidence 1.1.0";
 export function assessEvidence(columns: Column[], events: LiquidityEvent[]) {
   const summary = summarise(columns, events);
   const withdrawals = events.filter(e => e.type === "withdrawn");
@@ -12,10 +12,10 @@ export function assessEvidence(columns: Column[], events: LiquidityEvent[]) {
   }).length;
   return {
     indicators: [
-      { name: "Short-lived displayed liquidity", observed: summary.counts.short_lived, missing: "Order-level duration, trader identity and intent" },
-      { name: "Repeated level changes", observed: summary.flickerLevels.length, missing: "Individual order sequence and actual executions" },
-      { name: "Untouched size reductions", observed: summary.counts.withdrawn, missing: "Trade matching; cancellation is inferred, not verified" },
-      { name: "Possible relocation", observed: summary.counts.possible_relocation, missing: "Same-order or same-participant linkage" },
+      { name: "Short-lived displayed liquidity", observed: summary.counts.short_lived, missing: "Order-level duration, trader identity and intent", marRef: "UK MAR Annex I §A(a) — orders before execution, incl. cancelling/modifying to avoid execution" },
+      { name: "Repeated level changes", observed: summary.flickerLevels.length, missing: "Individual order sequence and actual executions", marRef: "UK MAR Annex I §A(a)/(b) — repeated non-bona fide order entry pattern (indicator only)" },
+      { name: "Untouched size reductions", observed: summary.counts.withdrawn, missing: "Trade matching; cancellation is inferred, not verified", marRef: "UK MAR Annex I §A(a) — withdrawal of orders before execution" },
+      { name: "Possible relocation", observed: summary.counts.possible_relocation, missing: "Same-order or same-participant linkage", marRef: "No direct Annex I mapping — linkage between levels is unverified" },
     ],
     alternatives: [
       { name: "Price-following quote updates", status: withdrawals.length ? `${follow}/${withdrawals.length} withdrawals coincide with a sampled mid-price change` : "No withdrawals to assess", evidence: "Single-venue temporal co-occurrence only; not a causal test." },
@@ -23,6 +23,28 @@ export function assessEvidence(columns: Column[], events: LiquidityEvent[]) {
       { name: "Delta-neutral hedging", status: "Not testable", evidence: "Needs linked spot/perpetual fills and participant positions." },
       { name: "Inventory risk mitigation", status: "Not testable", evidence: "Needs inventory, risk limits and participant records." },
     ],
+    statutoryMapping: {
+      reference: "UK MAR (Retained Regulation (EU) 596/2014) Annex I §A — indicator names only",
+      note: "Annex I lists non-exhaustive indicators of manipulative behaviour. A count of observed indicators is not a statutory test and establishes no element of an offence. Instrument and venue scope under Article 2 must be checked first; spot BTC is not automatically within UK MAR.",
+    },
+    judicialProngs: {
+      reference: "FCA v Da Vinci Invest Ltd [2015] EWHC 2401 (Ch) — derived from the FCA press release only; the judgment text is not verified here",
+      prongs: [
+        { name: "Orders placed without intention of execution", status: "Not assessable", evidence: "Intent cannot be inferred from bucketed public depth; requires order-level records and participant communications." },
+        { name: "Cancellation timed around counterparty execution", status: "Not assessable", evidence: "Trade matching against executions is not performed; cancellations are inferred, not verified." },
+        { name: "Inducement of price movement in other participants", status: "Not assessable", evidence: "Requires evidence that other participants reacted to the displayed liquidity." },
+        { name: "Different instruments and facts", status: "Structural limit", evidence: "Da Vinci concerned layering in 186 UK-listed shares on a regulated market; no automatic inference about crypto spot trading." },
+      ],
+    },
+    legitimateExplanations: {
+      reference: "Legitimate commercial explanations checklist — cf. FCA v Abbattista [2020] UKUT 0221 (TCC) (case-research lead; text not verified here)",
+      items: [
+        { name: "Market-maker quote updates", evidence: "Continuous repricing around a moving mid is ordinary liquidity provision; needs participant role and quoting obligations." },
+        { name: "Inventory / risk-limit management", evidence: "Size reductions may reflect risk limits being hit; needs inventory and limit records." },
+        { name: "Pre-hedging or delta-neutral hedging", evidence: "Order changes may accompany hedging in a linked instrument; needs positions and fills across venues." },
+        { name: "Latency protection / adverse selection", evidence: "Rapid withdrawal after a price move can be defensive; needs venue-synchronised timestamps." },
+      ],
+    },
     gaps: summary.gaps,
     conclusion: "Displayed-book indicators only. No legal element, intent or misconduct is established.",
   };
