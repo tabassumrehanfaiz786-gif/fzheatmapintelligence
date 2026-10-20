@@ -32,9 +32,12 @@ export function AppShell({ children }: { children: ReactNode }) {
     <div className="min-h-screen md:flex">
       <aside className="border-b md:sticky md:top-0 md:h-screen md:w-60 md:shrink-0 md:border-b-0 md:border-r">
         <div className="flex items-center justify-between gap-3 px-4 py-3 md:block">
-          <Link to="/" className="block">
-            <div className="font-mono text-lg font-bold tracking-tight text-primary">FZ HMI</div>
-            <div className="text-xs text-muted-foreground">Fz Heat Map Intelligence</div>
+          <Link to="/" className="flex items-center gap-3">
+            <img src="/favicon.svg" alt="FZ HMI icon" width={36} height={36} className="h-9 w-9 shrink-0" />
+            <div>
+              <div className="font-mono text-lg font-bold tracking-tight text-primary">FZ HMI</div>
+              <div className="text-xs text-muted-foreground">Fz Heat Map Intelligence</div>
+            </div>
           </Link>
           <div className="md:mt-3"><StatusPill /></div>
         </div>
